@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin</title>
+    <style>
+        body { font-family: sans-serif; background: #eef1f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { background: #fff; padding: 15px 25px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+        .btn { padding: 5px 10px; border-radius: 4px; color: white; text-decoration: none; font-size: 12px; border:none; cursor:pointer;}
+        .btn-blue { background: #007bff; } .btn-red { background: #dc3545; } .btn-green { background: #28a745; }
+        .badge { padding: 3px 8px; border-radius: 10px; font-size: 11px; color: white; }
+        .bg-cheio { background: #28a745; } .bg-vazio { background: #dc3545; } .bg-metade { background: #ffc107; color: #333; }
+        input { padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h2>Admin</h2>
+            <div>
+                <a href="/admin/analytics" class="btn btn-blue">📊 Relatórios</a>
+                <a href="/admin/logout" class="btn btn-red">Sair</a>
+            </div>
+        </header>
+
+        <!-- Configuração -->
+        <div class="card">
+            <h4>Token Telegram</h4>
+            <form action="/admin/update_token" method="POST">
+                <input type="text" name="telegram_token" value="{{ current_token }}" style="width: 300px;">
+                <button class="btn btn-green">Salvar</button>
+            </form>
+        </div>
+
+        <!-- Cadastro -->
+        <div class="card">
+            <h4>Novo Usuário</h4>
+            <form action="/admin/register_user" method="POST" style="display:flex; gap:10px;">
+                <input type="text" name="nome" placeholder="Nome" required>
+                <input type="text" name="chat_id" placeholder="Chat ID" required>
+                <input type="text" name="username" placeholder="Login" required>
+                <input type="text" name="password" placeholder="Senha" required>
+                <button class="btn btn-green">Criar</button>
+            </form>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <!-- Usuários -->
+            <div class="card">
+                <h4>Usuários</h4>
+                <table>
+                    <tr><th>Nome</th><th>Permissões</th><th></th></tr>
+                    {% for u in users %}
+                    <tr>
+                        <td>{{ u.nome }}<br><small>{{ u.username }}</small></td>
+                        <td>
+                            <form action="/admin/update_perms" method="POST">
+                                <input type="hidden" name="user_id" value="{{ u.id }}">
+                                <label><input type="checkbox" name="perm_light" {% if u.can_toggle_light %}checked{% endif %}> Luz</label>
+                                <label><input type="checkbox" name="perm_photo" {% if u.can_request_photo %}checked{% endif %}> Foto</label>
+                                <button class="btn btn-blue">OK</button>
+                            </form>
+                        </td>
+                        <td><a href="/admin/delete/user/{{ u.id }}" class="btn btn-red">X</a></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+
+            <!-- Módulos -->
+            <div class="card">
+                <h4>Módulos</h4>
+                <table>
+                    <tr><th>Info</th><th>Controle</th><th></th></tr>
+                    {% for m in modules %}
+                    <tr>
+                        <td>
+                            <b>{{ m.id }}</b><br>
+                            <span class="badge bg-{{ m.status }}">{{ m.status }}</span><br>
+                            Luz: {{ m.current_light }}
+                            <form action="/admin/update_thresh" method="POST" style="margin-top:5px;">
+                                <input type="hidden" name="modulo_id" value="{{ m.id }}">
+                                <input type="number" name="threshold" value="{{ m.light_threshold }}" style="width:60px">
+                                <button class="btn btn-blue">OK</button>
+                            </form>
+                        </td>
+                        <td>
+                            <a href="/control/toggle/{{ m.id }}/auto" class="btn {{ 'btn-blue' if m.auto_mode else 'btn-red' }}">Auto: {{ 'ON' if m.auto_mode else 'OFF' }}</a><br>
+                            <a href="/control/toggle/{{ m.id }}/light" class="btn {{ 'btn-green' if m.relay_on else 'btn-red' }}" style="margin-top:2px">Luz: {{ 'ON' if m.relay_on else 'OFF' }}</a><br>
+                            <a href="/control/photo/{{ m.id }}" class="btn btn-blue" style="margin-top:2px">{{ '...' if m.photo_requested else 'Foto' }}</a>
+                            {% if m.last_photo %}
+                                <a href="/static/fotos/{{ m.last_photo }}" target="_blank" style="font-size:10px; display:block">Ver Foto</a>
+                            {% endif %}
+                        </td>
+                        <td><a href="/admin/delete/module/{{ m.id }}" class="btn btn-red">X</a></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        setInterval(() => {
+            if (!document.querySelector('input:focus')) window.location.reload();
+        }, 5000);
+    </script>
+</body>
+</html>

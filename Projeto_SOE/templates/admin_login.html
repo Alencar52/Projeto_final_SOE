@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login do Administrador</title>
+    <style>
+        body { font-family: sans-serif; display: grid; place-items: center; min-height: 90vh; background-color: #f0f2f5; margin: 0; }
+        .login-box { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h1 { text-align: center; margin-top: 0; color: #333; }
+        form { display: flex; flex-direction: column; gap: 20px; }
+        label { font-weight: bold; color: #555; }
+        input[type="password"] { padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        button { background-color: #007bff; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background 0.3s; }
+        button:hover { background-color: #0056b3; }
+        .flash { padding: 12px; margin-bottom: 20px; border-radius: 5px; text-align: center; }
+        .danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h1>Área Restrita</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="/admin/login" method="POST">
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label for="password">Senha Mestra:</label>
+                <input type="password" id="password" name="password" placeholder="Digite a senha de admin" required>
+            </div>
+            <button type="submit">Entrar</button>
+        </form>
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="/" style="color: #666; text-decoration: none; font-size: 14px;">← Voltar para o Site</a>
+        </div>
+    </div>
+</body>
+</html>

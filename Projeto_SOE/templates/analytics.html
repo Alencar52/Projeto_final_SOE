@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatórios de Estoque</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 20px; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        header { background: #fff; padding: 20px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { margin: 0; color: #1a2b4d; }
+        .btn-back { text-decoration: none; color: #666; font-weight: bold; }
+
+        /* Cards de Insight */
+        .insights { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        .card { background: #fff; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card h3 { margin: 0 0 10px 0; font-size: 14px; color: #666; text-transform: uppercase; }
+        .big-number { font-size: 28px; font-weight: bold; color: #007bff; }
+        .sub-text { font-size: 12px; color: #999; margin-top: 5px; }
+
+        /* Tabela Histórico */
+        .history-section { background: #fff; padding: 20px; border-radius: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; color: #555; }
+        
+        .status-change { display: flex; align-items: center; gap: 10px; }
+        .arrow { color: #999; font-weight: bold; }
+        .tag { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; text-transform: uppercase; }
+        .tag.cheio { background: #28a745; }
+        .tag.metade { background: #ffc107; color: #333; }
+        .tag.vazio { background: #dc3545; }
+        .tag.desconhecido { background: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Análise de Inteligência</h1>
+            <a href="/admin/dashboard" class="btn-back">← Voltar ao Painel</a>
+        </header>
+
+        <!-- Insights -->
+        <div class="insights">
+            <div class="card">
+                <h3>Dia Crítico de Reposição</h3>
+                <div class="big-number">{{ dia_critico }}</div>
+                <div class="sub-text">Dia em que a banca mais fica vazia</div>
+            </div>
+            <div class="card">
+                <h3>Horário de Pico de Saída</h3>
+                <div class="big-number">{{ hora_critica }}</div>
+                <div class="sub-text">Horário aproximado que o estoque acaba</div>
+            </div>
+            <div class="card">
+                <h3>Ocorrências de "Vazio"</h3>
+                <div class="big-number">{{ total_vazios }}</div>
+                <div class="sub-text">Total de vezes que o estoque zerou</div>
+            </div>
+        </div>
+
+        <!-- Tabela -->
+        <div class="history-section">
+            <h2>Histórico de Eventos (Últimos 100)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data/Hora (UTC)</th>
+                        <th>Módulo</th>
+                        <th>Mudança de Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for evento in historico %}
+                    <tr>
+                        <td>{{ evento.timestamp.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                        <td><strong>{{ evento.modulo_id }}</strong></td>
+                        <td>
+                            <div class="status-change">
+                                <span class="tag {{ evento.status_anterior }}">{{ evento.status_anterior }}</span>
+                                <span class="arrow">➝</span>
+                                <span class="tag {{ evento.novo_status }}">{{ evento.novo_status }}</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" style="text-align:center; padding:20px;">Sem histórico registrado ainda.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

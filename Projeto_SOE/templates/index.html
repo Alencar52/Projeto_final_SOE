@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        header { background: #fff; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card { background: #fff; padding: 20px; border-radius: 8px; margin: 10px; width: 250px; text-align: center; display: inline-block; vertical-align: top; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .status { padding: 10px; border-radius: 4px; color: white; font-weight: bold; margin: 10px 0; }
+        .cheio { background: #28a745; } .metade { background: #ffc107; color: #333; } .vazio { background: #dc3545; }
+        .btn { display: block; width: 100%; padding: 8px; margin-top: 5px; border-radius: 4px; text-decoration: none; color: white; font-size: 13px; }
+        .btn-luz { background: #fd7e14; } .btn-foto { background: #007bff; }
+        .bot-qr { width: 100px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h3>Olá, {{ user.nome }}</h3>
+        <a href="/logout" style="color: red; text-decoration: none;">Sair</a>
+    </header>
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img src="{{ url_for('static', filename='qrcode_bot.jpg') }}" class="bot-qr">
+        <p><a href="https://t.me/BANCASOE_BOT">@BANCASOE_BOT</a></p>
+    </div>
+
+    <div id="dashboard"></div>
+
+    <script>
+        const perms = { light: {{ user.can_toggle_light|tojson }}, photo: {{ user.can_request_photo|tojson }} };
+        
+        async function update() {
+            try {
+                const res = await fetch('/api/modulos');
+                if (res.status === 401) window.location.reload();
+                const data = await res.json();
+                
+                document.getElementById('dashboard').innerHTML = data.map(m => `
+                    <div class="card">
+                        <h3>${m.id}</h3>
+                        <div class="status ${m.status.toLowerCase()}">${m.status.toUpperCase()}</div>
+                        <small>Luz: ${m.current_light}</small>
+                        <div style="margin-top:10px">
+                            ${perms.light ? `<a href="/control/toggle/${m.id}/light" class="btn btn-luz">${m.relay_on ? 'Apagar' : 'Acender'}</a>` : ''}
+                            ${perms.photo ? `<a href="/control/photo/${m.id}" class="btn btn-foto">${m.photo_requested ? '...' : 'Foto'}</a>` : ''}
+                            ${m.last_photo ? `<a href="/static/fotos/${m.last_photo}" target="_blank" style="display:block;margin-top:5px;font-size:12px">Ver Foto</a>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } catch(e){}
+        }
+        setInterval(update, 5000);
+        update();
+    </script>
+</body>
+</html>
